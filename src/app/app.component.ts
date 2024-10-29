@@ -15,16 +15,30 @@ export class AppComponent {
   @ViewChild('capturaArea') capturaArea!: ElementRef;
   capturar() {
     html2canvas(this.capturaArea.nativeElement).then(canvas => {
-      // Crear un enlace para descargar la imagen
-      const imgData = canvas.toDataURL('image/png');
+      // Crear un Blob a partir del canvas
+      canvas.toBlob(blob => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'captura.png';
+          
+           // Crear un evento de clic
+           const event = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+          });
 
-      // Crear un enlace para descargar la imagen
-      const a = document.createElement('a');
-      a.href = imgData;
-      // Simular un clic en el enlace
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a); // Limpiar el DOM
+          // Añadir el enlace al DOM y disparar el evento
+          document.body.appendChild(a);
+          a.dispatchEvent(event); // Usar dispatchEvent en lugar de click()
+          document.body.removeChild(a); // Limpiar el DOM
+          
+          // Liberar el objeto URL
+          URL.revokeObjectURL(url);
+        }
+      }, 'image/png');
     }).catch(error => {
       console.error('Error al capturar el área:', error);
     });
